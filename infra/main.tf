@@ -143,3 +143,27 @@ resource "google_project_service" "fcm" {
   depends_on = [google_project_service.serviceusage]
 }
 
+# Enable Cloud Scheduler API
+resource "google_project_service" "cloudscheduler" {
+  provider = google-beta
+
+  project = google_project.default.project_id
+  service = "cloudscheduler.googleapis.com"
+
+  disable_on_destroy = false
+
+  depends_on = [google_project_service.serviceusage]
+}
+
+# Enable Cloud Tasks API (for individual bookmark reminders)
+resource "google_project_service" "cloudtasks" {
+  provider = google-beta
+
+  project = google_project.default.project_id
+  service = "cloudtasks.googleapis.com"
+
+  disable_on_destroy = false
+
+  depends_on = [google_project_service.serviceusage]
+}
+
