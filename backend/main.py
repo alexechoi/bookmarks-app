@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from auth import FirebaseUser, OptionalFirebaseUser
+from bookmarks import router as bookmarks_router
 from firebase_service import auto_initialize
 from notifications import router as notifications_router
 
@@ -43,6 +44,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(bookmarks_router)
 app.include_router(notifications_router)
 
 
