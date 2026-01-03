@@ -124,3 +124,15 @@ variable "netlify_token" {
   sensitive   = true
 }
 
+variable "netlify_site_id" {
+  description = "Netlify Site ID. Create the site in the Netlify UI first, then find the ID in Site Settings > General > Site ID"
+  type        = string
+  default     = ""
+}
+
+variable "netlify_team_slug" {
+  description = "Netlify team slug (from your Netlify team URL, e.g., app.netlify.com/teams/YOUR-TEAM-SLUG)"
+  type        = string
+  default     = ""
+}
+
