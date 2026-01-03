@@ -146,7 +146,7 @@ class TasksService:
         # For production, you'd store task names in Firestore with the bookmark
         # For now, we rely on the task checking if bookmark is read before sending
         logger.debug(
-            f"Task deletion not implemented - tasks will check read status at execution"
+            "Task deletion not implemented - tasks will check read status at execution"
         )
         return 0
 

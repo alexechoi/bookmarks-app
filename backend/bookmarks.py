@@ -316,7 +316,6 @@ async def update_bookmark(
     if not doc.exists:
         raise HTTPException(status_code=404, detail="Bookmark not found")
 
-    data = doc.to_dict()
     update_data = {"updatedAt": datetime.now(timezone.utc)}
 
     if updates.is_read is not None:
