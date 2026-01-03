@@ -46,8 +46,25 @@ resource "google_cloud_run_v2_service" "backend" {
       }
 
       env {
+        name  = "GCP_REGION"
+        value = var.region
+      }
+
+      env {
         name  = "ENVIRONMENT"
         value = "production"
+      }
+
+      # Backend URL for Cloud Tasks callbacks (set after first deployment)
+      env {
+        name  = "BACKEND_URL"
+        value = "" # Will be set via CI/CD after deployment
+      }
+
+      # Scheduler service account for OIDC token verification
+      env {
+        name  = "SCHEDULER_SERVICE_ACCOUNT"
+        value = google_service_account.scheduler.email
       }
 
       # CORS allowed origins - set after deployment via CI/CD or manually

@@ -32,6 +32,24 @@ resource "google_project_iam_member" "firebase_admin_auth" {
   member  = "serviceAccount:${google_service_account.firebase_admin.email}"
 }
 
+# Grant Firestore access to the Firebase Admin service account
+resource "google_project_iam_member" "firebase_admin_firestore" {
+  provider = google-beta
+
+  project = google_project.default.project_id
+  role    = "roles/datastore.user"
+  member  = "serviceAccount:${google_service_account.firebase_admin.email}"
+}
+
+# Grant FCM access to the Firebase Admin service account
+resource "google_project_iam_member" "firebase_admin_fcm" {
+  provider = google-beta
+
+  project = google_project.default.project_id
+  role    = "roles/firebase.sdkAdminServiceAgent"
+  member  = "serviceAccount:${google_service_account.firebase_admin.email}"
+}
+
 # Create a service account key for the Firebase Admin SDK
 resource "google_service_account_key" "firebase_admin" {
   provider = google-beta

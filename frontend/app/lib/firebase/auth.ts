@@ -1,12 +1,15 @@
 import type { UserCredential } from "firebase/auth";
 import {
   createUserWithEmailAndPassword,
+  EmailAuthProvider,
   GoogleAuthProvider,
   OAuthProvider,
+  reauthenticateWithCredential,
   sendPasswordResetEmail as firebaseSendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut as firebaseSignOut,
+  updatePassword as firebaseUpdatePassword,
 } from "firebase/auth";
 
 import { auth } from "./config";
@@ -58,4 +61,37 @@ export function getCurrentUser() {
 
 export async function sendPasswordResetEmail(email: string): Promise<void> {
   return firebaseSendPasswordResetEmail(auth, email);
+}
+
+export async function updatePassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> {
+  const user = auth.currentUser;
+  if (!user || !user.email) {
+    throw new Error("No authenticated user found");
+  }
+
+  // Re-authenticate user before password change
+  const credential = EmailAuthProvider.credential(user.email, currentPassword);
+  await reauthenticateWithCredential(user, credential);
+
+  // Update password
+  await firebaseUpdatePassword(user, newPassword);
+}
+
+export function getAuthProvider(): string | null {
+  const user = auth.currentUser;
+  if (!user) return null;
+
+  // Check provider data to determine how user signed in
+  const providers = user.providerData;
+  if (providers.length === 0) return null;
+
+  const providerId = providers[0].providerId;
+  if (providerId === "google.com") return "google";
+  if (providerId === "apple.com") return "apple";
+  if (providerId === "password") return "password";
+
+  return providerId;
 }

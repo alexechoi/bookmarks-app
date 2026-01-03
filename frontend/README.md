@@ -34,9 +34,52 @@ This app includes Firebase Authentication with:
 - `/auth/signup` - Sign up page
 - `/dashboard` - Protected dashboard (requires authentication)
 
+## Data Model
+
 ### User Data
 
 When a user signs up, a Firestore document is created at `/users/{uid}` containing user profile data and consent timestamps.
+
+### Bookmarks
+
+Bookmarks are stored as subcollections under each user document for better security and data isolation:
+
+```
+/users/{userId}/bookmarks/{bookmarkId}
+```
+
+Each bookmark document contains:
+
+- `url` - The saved URL
+- `title` - Page title (auto-fetched)
+- `description` - Page description (auto-fetched)
+- `favicon` - Favicon URL (auto-fetched)
+- `reminderInterval` - Reminder frequency: "1d", "3d", "1w", or "1m"
+- `nextReminderAt` - When the next reminder is due
+- `isRead` - Whether the bookmark has been read
+- `createdAt` - Timestamp
+- `updatedAt` - Timestamp
+
+### Firestore Security Rules
+
+Configure your Firestore security rules to allow users to read/write only their own bookmarks:
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read/write their own user document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Users can read/write their own bookmarks subcollection
+      match /bookmarks/{bookmarkId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}
+```
 
 ## Learn More
 
