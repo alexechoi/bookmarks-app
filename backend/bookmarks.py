@@ -18,13 +18,15 @@ from pydantic import BaseModel, HttpUrl
 
 from auth import FirebaseUser
 from firebase_service import get_firebase_service
+from tasks import get_tasks_service
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/bookmarks", tags=["bookmarks"])
 
 # Types
-ReminderInterval = Literal["1d", "3d", "1w", "1m"]
+# NOTE: "3s" is for testing only - remove in production
+ReminderInterval = Literal["3s", "1d", "3d", "1w", "1m"]
 
 
 def get_db():
@@ -82,6 +84,7 @@ def calculate_next_reminder(interval: ReminderInterval) -> datetime:
     """Calculate the next reminder date based on the interval."""
     now = datetime.now(timezone.utc)
     intervals = {
+        "3s": timedelta(seconds=3),  # Testing only
         "1d": timedelta(days=1),
         "3d": timedelta(days=3),
         "1w": timedelta(weeks=1),
@@ -118,9 +121,7 @@ async def fetch_url_metadata(url: str) -> dict:
             base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
 
             # Extract title
-            title_match = re.search(
-                r"<title[^>]*>([^<]+)</title>", html, re.IGNORECASE
-            )
+            title_match = re.search(r"<title[^>]*>([^<]+)</title>", html, re.IGNORECASE)
             if title_match:
                 metadata["title"] = title_match.group(1).strip()
 
@@ -235,6 +236,18 @@ async def create_bookmark(bookmark: BookmarkCreate, user: FirebaseUser):
     # Add to Firestore under user's bookmarks subcollection
     doc_ref = get_bookmarks_collection(user_id).add(bookmark_data)
     bookmark_id = doc_ref[1].id
+
+    # Schedule the reminder notification using Cloud Tasks
+    tasks = get_tasks_service()
+    if tasks.is_enabled():
+        tasks.schedule_bookmark_reminder(
+            user_id=user_id,
+            bookmark_id=bookmark_id,
+            schedule_time=next_reminder,
+        )
+        logger.info(f"Scheduled reminder for bookmark {bookmark_id} at {next_reminder}")
+    else:
+        logger.debug("Cloud Tasks not enabled, reminder will be sent via scheduled job")
 
     return BookmarkResponse(
         id=bookmark_id,

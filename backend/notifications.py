@@ -12,7 +12,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from auth import FirebaseUser
+from auth import FirebaseUser, SchedulerOrUser
 from firebase_service import get_firebase_service
 
 logger = logging.getLogger(__name__)
@@ -181,7 +181,7 @@ class ReminderResult(BaseModel):
 
 @router.post("/send-due-reminders", response_model=ReminderResult)
 async def send_due_reminders(
-    _user: FirebaseUser,  # Require authentication (should be service account or admin)
+    _auth: SchedulerOrUser,  # Accept Cloud Scheduler OIDC or Firebase user
 ) -> dict[str, Any]:
     """
     Send reminders for all bookmarks that are due.
@@ -253,17 +253,22 @@ async def send_due_reminders(
         # Update nextReminderAt for each bookmark
         for bookmark in bookmarks_list:
             interval = bookmark.get("reminderInterval", "1d")
-            intervals = {
-                "1d": 1,
-                "3d": 3,
-                "1w": 7,
-                "1m": 30,
-            }
-            days = intervals.get(interval, 1)
-            next_reminder = datetime.now(timezone.utc).replace(
-                hour=9, minute=0, second=0, microsecond=0
-            )
-            next_reminder += timedelta(days=days)
+
+            # Handle test interval specially
+            if interval == "3s":
+                next_reminder = datetime.now(timezone.utc) + timedelta(seconds=3)
+            else:
+                intervals = {
+                    "1d": 1,
+                    "3d": 3,
+                    "1w": 7,
+                    "1m": 30,
+                }
+                days = intervals.get(interval, 1)
+                next_reminder = datetime.now(timezone.utc).replace(
+                    hour=9, minute=0, second=0, microsecond=0
+                )
+                next_reminder += timedelta(days=days)
 
             (
                 db.collection("users")
@@ -286,7 +291,7 @@ async def send_due_reminders(
 
 @router.post("/send-daily-digest", response_model=ReminderResult)
 async def send_daily_digest(
-    _user: FirebaseUser,  # Require authentication (should be service account or admin)
+    _auth: SchedulerOrUser,  # Accept Cloud Scheduler OIDC or Firebase user
 ) -> dict[str, Any]:
     """
     Send a daily digest of unread bookmarks to all users.
@@ -348,4 +353,76 @@ async def send_daily_digest(
         "users_notified": users_notified,
         "bookmarks_reminded": total_bookmarks,
         "message": f"Sent daily digest to {users_notified} users about {total_bookmarks} bookmarks",
+    }
+
+
+class BookmarkReminderRequest(BaseModel):
+    """Request to send a reminder for a specific bookmark."""
+
+    user_id: str = Field(..., description="User's Firebase UID")
+    bookmark_id: str = Field(..., description="Bookmark document ID")
+
+
+@router.post("/send-bookmark-reminder")
+async def send_bookmark_reminder(
+    request: BookmarkReminderRequest,
+    _auth: SchedulerOrUser,  # Accept Cloud Tasks OIDC or Firebase user
+) -> dict[str, Any]:
+    """
+    Send a reminder notification for a specific bookmark.
+
+    This endpoint is called by Cloud Tasks for individual bookmark reminders.
+    """
+    firebase = get_firebase_service()
+    db = get_db()
+
+    # Get the bookmark
+    bookmark_ref = (
+        db.collection("users")
+        .document(request.user_id)
+        .collection("bookmarks")
+        .document(request.bookmark_id)
+    )
+    bookmark_doc = bookmark_ref.get()
+
+    if not bookmark_doc.exists:
+        return {"success": False, "message": "Bookmark not found"}
+
+    bookmark = bookmark_doc.to_dict()
+
+    # Skip if already read
+    if bookmark.get("isRead"):
+        return {"success": False, "message": "Bookmark already read"}
+
+    # Send notification
+    title = "Time to read!"
+    body = f"Check out: {bookmark.get('title', bookmark.get('url', 'your saved link'))}"
+
+    result = firebase.send_to_user(
+        user_id=request.user_id,
+        title=title,
+        body=body,
+        data={
+            "type": "bookmark_reminder",
+            "bookmark_id": request.bookmark_id,
+            "url": bookmark.get("url", ""),
+        },
+    )
+
+    # Schedule next reminder if still unread
+    if result.get("success_count", 0) > 0:
+        interval = bookmark.get("reminderInterval", "1d")
+
+        if interval == "3s":
+            next_reminder = datetime.now(timezone.utc) + timedelta(seconds=3)
+        else:
+            intervals = {"1d": 1, "3d": 3, "1w": 7, "1m": 30}
+            days = intervals.get(interval, 1)
+            next_reminder = datetime.now(timezone.utc) + timedelta(days=days)
+
+        bookmark_ref.update({"nextReminderAt": next_reminder})
+
+    return {
+        "success": result.get("success_count", 0) > 0,
+        "message": result.get("message", "Reminder sent"),
     }
