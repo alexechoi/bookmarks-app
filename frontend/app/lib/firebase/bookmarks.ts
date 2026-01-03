@@ -21,7 +21,8 @@ import {
 
 import { db } from "./config";
 
-export type ReminderInterval = "1d" | "3d" | "1w" | "1m";
+// NOTE: "3s" is for testing only - remove in production
+export type ReminderInterval = "3s" | "1d" | "3d" | "1w" | "1m";
 
 export interface Bookmark {
   id: string;
@@ -64,6 +65,9 @@ function getBookmarkDoc(userId: string, bookmarkId: string) {
 export function calculateNextReminder(interval: ReminderInterval): Date {
   const now = new Date();
   switch (interval) {
+    case "3s":
+      // Testing only - 3 seconds
+      return new Date(now.getTime() + 3 * 1000);
     case "1d":
       return new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000);
     case "3d":
@@ -82,6 +86,8 @@ export function calculateNextReminder(interval: ReminderInterval): Date {
  */
 export function getReminderLabel(interval: ReminderInterval): string {
   switch (interval) {
+    case "3s":
+      return "3 seconds (test)";
     case "1d":
       return "1 day";
     case "3d":

@@ -4,10 +4,8 @@ import { LinkIcon, Loader2Icon } from "lucide-react";
 import { useState } from "react";
 
 import { useAuth } from "@/app/components/AuthProvider";
-import {
-  addBookmark,
-  type ReminderInterval,
-} from "@/app/lib/firebase/bookmarks";
+import { apiPost } from "@/app/lib/api";
+import { type ReminderInterval } from "@/app/lib/firebase/bookmarks";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,6 +28,19 @@ import {
 
 interface AddBookmarkDialogProps {
   onBookmarkAdded?: () => void;
+}
+
+interface BookmarkResponse {
+  id: string;
+  url: string;
+  title: string;
+  description: string;
+  favicon: string;
+  reminder_interval: ReminderInterval;
+  next_reminder_at: string;
+  is_read: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export function AddBookmarkDialog({ onBookmarkAdded }: AddBookmarkDialogProps) {
@@ -71,10 +82,11 @@ export function AddBookmarkDialog({ onBookmarkAdded }: AddBookmarkDialogProps) {
     setError(null);
 
     try {
-      // First add the bookmark with just the URL
-      await addBookmark(user.uid, {
+      // Call the backend API to create bookmark
+      // This will fetch metadata and schedule the reminder notification
+      await apiPost<BookmarkResponse>("/bookmarks", {
         url: validUrl,
-        reminderInterval,
+        reminder_interval: reminderInterval,
       });
 
       // Reset form and close dialog
@@ -84,7 +96,11 @@ export function AddBookmarkDialog({ onBookmarkAdded }: AddBookmarkDialogProps) {
       onBookmarkAdded?.();
     } catch (err) {
       console.error("Error adding bookmark:", err);
-      setError("Failed to add bookmark. Please try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to add bookmark. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -131,6 +147,7 @@ export function AddBookmarkDialog({ onBookmarkAdded }: AddBookmarkDialogProps) {
                   <SelectValue placeholder="Select interval" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="3s">⚡ 3 seconds (test)</SelectItem>
                   <SelectItem value="1d">1 day</SelectItem>
                   <SelectItem value="3d">3 days</SelectItem>
                   <SelectItem value="1w">1 week</SelectItem>
