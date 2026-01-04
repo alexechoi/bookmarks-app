@@ -1,6 +1,7 @@
-import { ExpoConfig, ConfigContext } from "expo/config";
+import type { ConfigContext, ExpoConfig } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
+  ...config,
   name: "LinkMind",
   slug: "linkmind",
   version: "1.0.0",
