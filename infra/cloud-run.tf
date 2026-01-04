@@ -202,7 +202,7 @@ resource "google_cloud_run_v2_service" "frontend" {
 
       # FCM VAPID key for web push notifications (optional)
       dynamic "env" {
-        for_each = var.fcm_vapid_key != "" ? [1] : []
+        for_each = var.fcm_vapid_key != "" ? toset(["vapid"]) : toset([])
         content {
           name  = "NEXT_PUBLIC_FIREBASE_VAPID_KEY"
           value = var.fcm_vapid_key
