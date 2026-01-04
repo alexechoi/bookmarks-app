@@ -175,7 +175,6 @@ function ProfileContent() {
                 </Label>
                 <p className="mt-1 font-medium capitalize">
                   {authProvider === "google" && "Google Account"}
-                  {authProvider === "apple" && "Apple ID"}
                   {authProvider === "password" && "Email & Password"}
                   {!authProvider && "Unknown"}
                 </p>
@@ -275,11 +274,8 @@ function ProfileContent() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  You signed in with{" "}
-                  {authProvider === "google" ? "Google" : "Apple"}. To change
-                  your password, please manage it through your{" "}
-                  {authProvider === "google" ? "Google" : "Apple"} account
-                  settings.
+                  You signed in with Google. To change your password, please
+                  manage it through your Google account settings.
                 </p>
               </CardContent>
             </Card>

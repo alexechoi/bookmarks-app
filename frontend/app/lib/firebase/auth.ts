@@ -3,7 +3,6 @@ import {
   createUserWithEmailAndPassword,
   EmailAuthProvider,
   GoogleAuthProvider,
-  OAuthProvider,
   reauthenticateWithCredential,
   sendPasswordResetEmail as firebaseSendPasswordResetEmail,
   signInWithEmailAndPassword,
@@ -41,13 +40,6 @@ export async function signInWithGoogle(): Promise<UserCredential> {
   const provider = new GoogleAuthProvider();
   provider.addScope("email");
   provider.addScope("profile");
-  return signInWithPopup(auth, provider);
-}
-
-export async function signInWithApple(): Promise<UserCredential> {
-  const provider = new OAuthProvider("apple.com");
-  provider.addScope("email");
-  provider.addScope("name");
   return signInWithPopup(auth, provider);
 }
 
@@ -90,7 +82,6 @@ export function getAuthProvider(): string | null {
 
   const providerId = providers[0].providerId;
   if (providerId === "google.com") return "google";
-  if (providerId === "apple.com") return "apple";
   if (providerId === "password") return "password";
 
   return providerId;

@@ -210,7 +210,6 @@ export default function ProfileScreen() {
                 <Text style={styles.detailLabel}>Sign-in</Text>
                 <Text style={styles.detailValue}>
                   {authProvider === "google" && "Google"}
-                  {authProvider === "apple" && "Apple"}
                   {authProvider === "password" && "Email"}
                   {!authProvider && "Unknown"}
                 </Text>
@@ -308,8 +307,7 @@ export default function ProfileScreen() {
               </CardHeader>
               <CardContent>
                 <Text style={styles.oauthInfo}>
-                  Manage your password through your{" "}
-                  {authProvider === "google" ? "Google" : "Apple"} account.
+                  Manage your password through your Google account.
                 </Text>
               </CardContent>
             </Card>

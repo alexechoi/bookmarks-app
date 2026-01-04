@@ -13,11 +13,7 @@ import {
 } from "react-native";
 
 import { Button, Checkbox, Input, Label } from "@/components/ui";
-import {
-  signInWithApple,
-  signInWithGoogle,
-  signUpWithEmail,
-} from "@/lib/firebase/auth";
+import { signInWithGoogle, signUpWithEmail } from "@/lib/firebase/auth";
 import { getFirebaseErrorMessage } from "@/lib/firebase/errors";
 import { createUserDocument } from "@/lib/firebase/firestore";
 import {
@@ -113,44 +109,6 @@ export default function SignupScreen() {
       const user = userCredential.user;
 
       // Extract name from Google profile
-      const displayName = user.displayName || "";
-      const nameParts = displayName.split(" ");
-      const firstName = nameParts[0] || "";
-      const lastName = nameParts.slice(1).join(" ") || "";
-
-      try {
-        await createUserDocument(user.uid, {
-          firstName,
-          lastName,
-          email: user.email || "",
-          phoneNumber: user.phoneNumber || "",
-          acceptedMarketing: formData.acceptedMarketing,
-        });
-      } catch (firestoreErr) {
-        console.error("Failed to create user document:", firestoreErr);
-      }
-
-      router.replace("/(app)");
-    } catch (err) {
-      setError(getFirebaseErrorMessage(err));
-      setLoading(false);
-    }
-  }
-
-  async function handleAppleSignUp() {
-    if (!formData.acceptedTerms || !formData.acceptedPrivacy) {
-      setError("You must accept the Terms of Service and Privacy Policy");
-      return;
-    }
-
-    setError("");
-    setLoading(true);
-
-    try {
-      const userCredential = await signInWithApple();
-      const user = userCredential.user;
-
-      // Extract name from Apple profile
       const displayName = user.displayName || "";
       const nameParts = displayName.split(" ");
       const firstName = nameParts[0] || "";
@@ -333,15 +291,6 @@ export default function SignupScreen() {
                 color={colors.foreground}
               />
               <Text style={styles.oauthButtonText}>Sign up with Google</Text>
-            </Button>
-
-            <Button
-              variant="neutral"
-              onPress={handleAppleSignUp}
-              disabled={loading}
-            >
-              <Ionicons name="logo-apple" size={20} color={colors.foreground} />
-              <Text style={styles.oauthButtonText}>Sign up with Apple</Text>
             </Button>
           </View>
 

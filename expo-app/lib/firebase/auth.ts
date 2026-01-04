@@ -3,7 +3,6 @@ import {
   createUserWithEmailAndPassword,
   EmailAuthProvider,
   GoogleAuthProvider,
-  OAuthProvider,
   onAuthStateChanged as firebaseOnAuthStateChanged,
   reauthenticateWithCredential,
   sendPasswordResetEmail as firebaseSendPasswordResetEmail,
@@ -73,44 +72,6 @@ export async function signInWithGoogle(): Promise<FirebaseAuthTypes.UserCredenti
     return signInWithCredential(auth, googleCredential);
   } catch (error) {
     console.error("Google Sign-In error:", error);
-    throw error;
-  }
-}
-
-/**
- * Sign in with Apple
- *
- * Note: This requires @invertase/react-native-apple-authentication to be installed.
- * For now, we'll create the structure and you can enable it once the package is installed.
- */
-export async function signInWithApple(): Promise<FirebaseAuthTypes.UserCredential> {
-  try {
-    const { appleAuth } =
-      await import("@invertase/react-native-apple-authentication");
-
-    // Start the sign-in request
-    const appleAuthRequestResponse = await appleAuth.performRequest({
-      requestedOperation: appleAuth.Operation.LOGIN,
-      requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
-    });
-
-    // Ensure Apple returned a user identityToken
-    if (!appleAuthRequestResponse.identityToken) {
-      throw new Error("Apple Sign-In failed - no identity token returned");
-    }
-
-    // Create an Apple credential
-    const { identityToken, nonce } = appleAuthRequestResponse;
-    const appleCredential = OAuthProvider.credential(
-      "apple.com",
-      identityToken,
-      nonce,
-    );
-
-    // Sign in to Firebase with the credential
-    return signInWithCredential(auth, appleCredential);
-  } catch (error) {
-    console.error("Apple Sign-In error:", error);
     throw error;
   }
 }
@@ -189,7 +150,6 @@ export function getAuthProvider(): string | null {
 
   const providerId = providers[0].providerId;
   if (providerId === "google.com") return "google";
-  if (providerId === "apple.com") return "apple";
   if (providerId === "password") return "password";
 
   return providerId;
