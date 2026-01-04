@@ -13,12 +13,9 @@ import {
 } from "react-native";
 
 import { Button, Input, Label } from "@/components/ui";
-import {
-  signInWithApple,
-  signInWithEmail,
-  signInWithGoogle,
-} from "@/lib/firebase/auth";
+import { signInWithEmail, signInWithGoogle } from "@/lib/firebase/auth";
 import { getFirebaseErrorMessage } from "@/lib/firebase/errors";
+import { createUserDocument, getUserDocument } from "@/lib/firebase/firestore";
 import {
   borderRadius,
   borderWidth,
@@ -58,21 +55,27 @@ export default function LoginScreen() {
     setLoading(true);
 
     try {
-      await signInWithGoogle();
-      router.replace("/(app)");
-    } catch (err) {
-      setError(getFirebaseErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
-  }
+      const userCredential = await signInWithGoogle();
+      const user = userCredential.user;
 
-  async function handleAppleSignIn() {
-    setError("");
-    setLoading(true);
+      // Check if user document exists, create if not (for returning users who signed up with Google)
+      const existingDoc = await getUserDocument(user.uid);
+      if (!existingDoc) {
+        // Extract name from Google profile
+        const displayName = user.displayName || "";
+        const nameParts = displayName.split(" ");
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.slice(1).join(" ") || "";
 
-    try {
-      await signInWithApple();
+        await createUserDocument(user.uid, {
+          firstName,
+          lastName,
+          email: user.email || "",
+          phoneNumber: user.phoneNumber || "",
+          acceptedMarketing: false,
+        });
+      }
+
       router.replace("/(app)");
     } catch (err) {
       setError(getFirebaseErrorMessage(err));
@@ -122,15 +125,6 @@ export default function LoginScreen() {
                 color={colors.foreground}
               />
               <Text style={styles.oauthButtonText}>Continue with Google</Text>
-            </Button>
-
-            <Button
-              variant="neutral"
-              onPress={handleAppleSignIn}
-              disabled={loading}
-            >
-              <Ionicons name="logo-apple" size={20} color={colors.foreground} />
-              <Text style={styles.oauthButtonText}>Continue with Apple</Text>
             </Button>
           </View>
 
