@@ -1,4 +1,27 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
+import * as fs from "fs";
+import * as path from "path";
+
+// Extract webClientId from google-services.json (client_type 3 = web client)
+function getWebClientId(): string | undefined {
+  try {
+    const googleServicesPath =
+      process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json";
+    const fullPath = path.resolve(__dirname, googleServicesPath);
+    const content = fs.readFileSync(fullPath, "utf-8");
+    const googleServices = JSON.parse(content) as {
+      client?: {
+        oauth_client?: { client_type: number; client_id: string }[];
+      }[];
+    };
+    const oauthClients = googleServices.client?.[0]?.oauth_client;
+    const webClient = oauthClients?.find((client) => client.client_type === 3);
+    return webClient?.client_id;
+  } catch {
+    console.warn("Could not read webClientId from google-services.json");
+    return undefined;
+  }
+}
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -76,6 +99,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     eas: {
       projectId: "7b43ef7a-da56-46b5-a970-2f273c8e9690",
     },
+    webClientId: getWebClientId(),
   },
   owner: "alexchhk",
 });
