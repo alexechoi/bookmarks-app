@@ -34,26 +34,10 @@ resource "google_firestore_database" "default" {
 
 # Firestore Security Rules
 # Users can read/write their own document at /users/{userId}
-# and all subcollections (bookmarks, etc.)
 # All other access is denied by default
 
 locals {
-  firestore_rules = <<-EOT
-    rules_version = '2';
-    service cloud.firestore {
-      match /databases/{database}/documents {
-        match /users/{userId} {
-          allow read, write: if request.auth != null && request.auth.uid == userId;
-          match /{allPaths=**} {
-            allow read, write: if request.auth != null && request.auth.uid == userId;
-          }
-        }
-        match /{document=**} {
-          allow read, write: if false;
-        }
-      }
-    }
-  EOT
+  firestore_rules = "service cloud.firestore { match /databases/{database}/documents { match /users/{userId} { allow read, write: if request.auth != null && request.auth.uid == userId; } match /{document=**} { allow read, write: if false; } } }"
 }
 
 resource "google_firebaserules_ruleset" "firestore" {
@@ -117,11 +101,11 @@ resource "google_identity_platform_default_supported_idp_config" "google" {
 
   count = var.oauth_client_id != "" ? 1 : 0
 
-  project   = google_project.default.project_id
-  idp_id    = "google.com"
-  client_id = var.oauth_client_id
+  project       = google_project.default.project_id
+  idp_id        = "google.com"
+  client_id     = var.oauth_client_id
   client_secret = var.oauth_client_secret
-  enabled   = true
+  enabled       = true
 
   depends_on = [google_identity_platform_config.default]
 }
@@ -184,8 +168,8 @@ data "google_firebase_apple_app_config" "expo" {
   provider = google-beta
   count    = var.expo_ios_bundle_id != "" ? 1 : 0
 
-  project    = google_project.default.project_id
-  app_id     = google_firebase_apple_app.expo[0].app_id
+  project = google_project.default.project_id
+  app_id  = google_firebase_apple_app.expo[0].app_id
 
   depends_on = [google_firebase_apple_app.expo]
 }
@@ -209,8 +193,8 @@ data "google_firebase_android_app_config" "expo" {
   provider = google-beta
   count    = var.expo_android_package_name != "" ? 1 : 0
 
-  project    = google_project.default.project_id
-  app_id     = google_firebase_android_app.expo[0].app_id
+  project = google_project.default.project_id
+  app_id  = google_firebase_android_app.expo[0].app_id
 
   depends_on = [google_firebase_android_app.expo]
 }
