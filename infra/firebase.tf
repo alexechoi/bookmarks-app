@@ -37,7 +37,22 @@ resource "google_firestore_database" "default" {
 # All other access is denied by default
 
 locals {
-  firestore_rules = "service cloud.firestore { match /databases/{database}/documents { match /users/{userId} { allow read, write: if request.auth != null && request.auth.uid == userId; } match /{document=**} { allow read, write: if false; } } }"
+  firestore_rules = <<-EOT
+    rules_version = '2';
+    service cloud.firestore {
+      match /databases/{database}/documents {
+        match /users/{userId} {
+          allow read, write: if request.auth != null && request.auth.uid == userId;
+          match /{allPaths=**} {
+            allow read, write: if request.auth != null && request.auth.uid == userId;
+          }
+        }
+        match /{document=**} {
+          allow read, write: if false;
+        }
+      }
+    }
+  EOT
 }
 
 resource "google_firebaserules_ruleset" "firestore" {
