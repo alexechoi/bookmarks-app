@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import { useState } from "react";
 import {
@@ -8,12 +9,20 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
+import { Button, Input, Label } from "@/components/ui";
 import { sendPasswordResetEmail } from "@/lib/firebase/auth";
 import { getFirebaseErrorMessage } from "@/lib/firebase/errors";
+import {
+  borderRadius,
+  borderWidth,
+  colors,
+  shadows,
+  spacing,
+  typography,
+} from "@/lib/theme";
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState("");
@@ -44,6 +53,18 @@ export default function ForgotPasswordScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.content}>
+          {/* Success Icon */}
+          <View style={styles.successIconContainer}>
+            <View style={[styles.successIcon, shadows.base]}>
+              <Ionicons
+                name="checkmark-circle"
+                size={28}
+                color={colors.mainForeground}
+              />
+            </View>
+          </View>
+
+          {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Check your email</Text>
             <Text style={styles.subtitle}>
@@ -51,6 +72,7 @@ export default function ForgotPasswordScreen() {
             </Text>
           </View>
 
+          {/* Success Message */}
           <View style={styles.successContainer}>
             <Text style={styles.successText}>
               Click the link in the email to reset your password. If you
@@ -58,15 +80,9 @@ export default function ForgotPasswordScreen() {
             </Text>
           </View>
 
-          <Pressable
-            style={({ pressed }) => [
-              styles.button,
-              pressed && styles.buttonPressed,
-            ]}
-            onPress={() => router.replace("/(auth)/login")}
-          >
+          <Button onPress={() => router.replace("/(auth)/login")}>
             <Text style={styles.buttonText}>Back to sign in</Text>
-          </Pressable>
+          </Button>
         </View>
       </View>
     );
@@ -82,6 +98,19 @@ export default function ForgotPasswordScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.content}>
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <View style={[styles.logo, shadows.base]}>
+              <Ionicons
+                name="bookmark"
+                size={20}
+                color={colors.mainForeground}
+              />
+            </View>
+            <Text style={styles.logoText}>LinkMind</Text>
+          </View>
+
+          {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Reset password</Text>
             <Text style={styles.subtitle}>
@@ -89,21 +118,21 @@ export default function ForgotPasswordScreen() {
             </Text>
           </View>
 
+          {/* Error */}
           {error ? (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>
             </View>
           ) : null}
 
+          {/* Form */}
           <View style={styles.form}>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
+              <Label>Email</Label>
+              <Input
                 value={email}
                 onChangeText={setEmail}
                 placeholder="you@example.com"
-                placeholderTextColor="#71717a"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
@@ -112,23 +141,16 @@ export default function ForgotPasswordScreen() {
               />
             </View>
 
-            <Pressable
-              style={({ pressed }) => [
-                styles.button,
-                pressed && styles.buttonPressed,
-                loading && styles.buttonDisabled,
-              ]}
-              onPress={handleSubmit}
-              disabled={loading}
-            >
+            <Button onPress={handleSubmit} disabled={loading}>
               {loading ? (
-                <ActivityIndicator color="#09090b" />
+                <ActivityIndicator color={colors.mainForeground} size="small" />
               ) : (
                 <Text style={styles.buttonText}>Send reset link</Text>
               )}
-            </Pressable>
+            </Button>
           </View>
 
+          {/* Footer */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>Remember your password? </Text>
             <Link href="/(auth)/login" asChild>
@@ -146,109 +168,122 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#09090b",
+    backgroundColor: colors.background,
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
   },
   content: {
-    paddingHorizontal: 24,
-    paddingVertical: 48,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.xxl,
     maxWidth: 400,
     width: "100%",
     alignSelf: "center",
   },
+  logoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  logo: {
+    width: 36,
+    height: 36,
+    borderRadius: borderRadius.base,
+    borderWidth: borderWidth.base,
+    borderColor: colors.border,
+    backgroundColor: colors.main,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logoText: {
+    fontSize: typography.sizes.lg,
+    fontWeight: typography.heading.fontWeight,
+    color: colors.foreground,
+  },
+  successIconContainer: {
+    alignItems: "center",
+    marginBottom: spacing.lg,
+  },
+  successIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: borderRadius.base,
+    borderWidth: borderWidth.base,
+    borderColor: colors.border,
+    backgroundColor: colors.success,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   header: {
-    marginBottom: 32,
+    marginBottom: spacing.xl,
     alignItems: "center",
   },
   title: {
-    fontSize: 28,
-    fontWeight: "600",
-    color: "#fafafa",
-    letterSpacing: -0.5,
+    fontSize: typography.sizes["2xl"],
+    fontWeight: typography.heading.fontWeight,
+    color: colors.foreground,
+    letterSpacing: typography.heading.letterSpacing,
   },
   subtitle: {
-    fontSize: 15,
-    color: "#a1a1aa",
-    marginTop: 8,
+    fontSize: typography.sizes.base,
+    color: colors.muted,
+    marginTop: spacing.sm,
     textAlign: "center",
   },
   errorContainer: {
-    backgroundColor: "rgba(239, 68, 68, 0.1)",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 16,
+    backgroundColor: colors.destructiveLight,
+    borderRadius: borderRadius.base,
+    borderWidth: borderWidth.base,
+    borderColor: colors.destructive,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    marginBottom: spacing.lg,
   },
   errorText: {
-    color: "#f87171",
-    fontSize: 14,
+    color: colors.destructive,
+    fontSize: typography.sizes.sm,
   },
   successContainer: {
-    backgroundColor: "rgba(34, 197, 94, 0.1)",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 24,
+    backgroundColor: colors.successLight,
+    borderRadius: borderRadius.base,
+    borderWidth: borderWidth.base,
+    borderColor: colors.success,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    marginBottom: spacing.xl,
   },
   successText: {
-    color: "#4ade80",
-    fontSize: 14,
-    lineHeight: 20,
+    color: colors.foreground,
+    fontSize: typography.sizes.sm,
+    lineHeight: 22,
   },
   form: {
-    gap: 16,
+    gap: spacing.lg,
   },
   inputGroup: {
-    gap: 6,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#d4d4d8",
-  },
-  input: {
-    backgroundColor: "#18181b",
-    borderWidth: 1,
-    borderColor: "#27272a",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: "#fafafa",
-  },
-  button: {
-    backgroundColor: "#fafafa",
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  buttonPressed: {
-    backgroundColor: "#e4e4e7",
-  },
-  buttonDisabled: {
-    opacity: 0.6,
+    gap: spacing.xs,
   },
   buttonText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#09090b",
+    fontSize: typography.sizes.base,
+    fontWeight: typography.heading.fontWeight,
+    color: colors.mainForeground,
   },
   footer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 24,
+    marginTop: spacing.xl,
   },
   footerText: {
-    color: "#a1a1aa",
-    fontSize: 14,
+    color: colors.muted,
+    fontSize: typography.sizes.sm,
   },
   footerLink: {
-    color: "#fafafa",
-    fontSize: 14,
-    fontWeight: "500",
+    color: colors.foreground,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.heading.fontWeight,
+    textDecorationLine: "underline",
   },
 });

@@ -7,6 +7,7 @@ import {
   registerBackgroundHandler,
   usePushNotifications,
 } from "@/hooks/usePushNotifications";
+import { colors } from "@/lib/theme";
 
 // Register background message handler before React renders
 registerBackgroundHandler();
@@ -32,7 +33,7 @@ export default function RootLayout() {
     <AuthProvider>
       <PushNotificationHandler />
       <View style={styles.container}>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
         <Slot />
       </View>
     </AuthProvider>
@@ -42,6 +43,6 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#09090b",
+    backgroundColor: colors.background,
   },
 });

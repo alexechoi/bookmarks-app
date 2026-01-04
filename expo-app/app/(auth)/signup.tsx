@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import { useState } from "react";
 import {
@@ -8,13 +9,25 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
-import { signUpWithEmail } from "@/lib/firebase/auth";
+import { Button, Checkbox, Input, Label } from "@/components/ui";
+import {
+  signInWithApple,
+  signInWithGoogle,
+  signUpWithEmail,
+} from "@/lib/firebase/auth";
 import { getFirebaseErrorMessage } from "@/lib/firebase/errors";
 import { createUserDocument } from "@/lib/firebase/firestore";
+import {
+  borderRadius,
+  borderWidth,
+  colors,
+  shadows,
+  spacing,
+  typography,
+} from "@/lib/theme";
 
 export default function SignupScreen() {
   const [formData, setFormData] = useState({
@@ -86,6 +99,82 @@ export default function SignupScreen() {
     }
   }
 
+  async function handleGoogleSignUp() {
+    if (!formData.acceptedTerms || !formData.acceptedPrivacy) {
+      setError("You must accept the Terms of Service and Privacy Policy");
+      return;
+    }
+
+    setError("");
+    setLoading(true);
+
+    try {
+      const userCredential = await signInWithGoogle();
+      const user = userCredential.user;
+
+      // Extract name from Google profile
+      const displayName = user.displayName || "";
+      const nameParts = displayName.split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+
+      try {
+        await createUserDocument(user.uid, {
+          firstName,
+          lastName,
+          email: user.email || "",
+          phoneNumber: user.phoneNumber || "",
+          acceptedMarketing: formData.acceptedMarketing,
+        });
+      } catch (firestoreErr) {
+        console.error("Failed to create user document:", firestoreErr);
+      }
+
+      router.replace("/(app)");
+    } catch (err) {
+      setError(getFirebaseErrorMessage(err));
+      setLoading(false);
+    }
+  }
+
+  async function handleAppleSignUp() {
+    if (!formData.acceptedTerms || !formData.acceptedPrivacy) {
+      setError("You must accept the Terms of Service and Privacy Policy");
+      return;
+    }
+
+    setError("");
+    setLoading(true);
+
+    try {
+      const userCredential = await signInWithApple();
+      const user = userCredential.user;
+
+      // Extract name from Apple profile
+      const displayName = user.displayName || "";
+      const nameParts = displayName.split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+
+      try {
+        await createUserDocument(user.uid, {
+          firstName,
+          lastName,
+          email: user.email || "",
+          phoneNumber: user.phoneNumber || "",
+          acceptedMarketing: formData.acceptedMarketing,
+        });
+      } catch (firestoreErr) {
+        console.error("Failed to create user document:", firestoreErr);
+      }
+
+      router.replace("/(app)");
+    } catch (err) {
+      setError(getFirebaseErrorMessage(err));
+      setLoading(false);
+    }
+  }
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -96,51 +185,60 @@ export default function SignupScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.content}>
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <View style={[styles.logo, shadows.base]}>
+              <Ionicons
+                name="bookmark"
+                size={20}
+                color={colors.mainForeground}
+              />
+            </View>
+            <Text style={styles.logoText}>LinkMind</Text>
+          </View>
+
+          {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Create account</Text>
             <Text style={styles.subtitle}>Get started with your account</Text>
           </View>
 
+          {/* Error */}
           {error ? (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>
             </View>
           ) : null}
 
+          {/* Form */}
           <View style={styles.form}>
             <View style={styles.row}>
               <View style={[styles.inputGroup, styles.halfWidth]}>
-                <Text style={styles.label}>First name</Text>
-                <TextInput
-                  style={styles.input}
+                <Label>First name</Label>
+                <Input
                   value={formData.firstName}
                   onChangeText={(v) => updateField("firstName", v)}
                   placeholder="John"
-                  placeholderTextColor="#71717a"
                   autoComplete="given-name"
                 />
               </View>
               <View style={[styles.inputGroup, styles.halfWidth]}>
-                <Text style={styles.label}>Last name</Text>
-                <TextInput
-                  style={styles.input}
+                <Label>Last name</Label>
+                <Input
                   value={formData.lastName}
                   onChangeText={(v) => updateField("lastName", v)}
                   placeholder="Doe"
-                  placeholderTextColor="#71717a"
                   autoComplete="family-name"
                 />
               </View>
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
+              <Label>Email</Label>
+              <Input
                 value={formData.email}
                 onChangeText={(v) => updateField("email", v)}
                 placeholder="you@example.com"
-                placeholderTextColor="#71717a"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
@@ -149,127 +247,105 @@ export default function SignupScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Phone number (optional)</Text>
-              <TextInput
-                style={styles.input}
+              <Label>Phone number (optional)</Label>
+              <Input
                 value={formData.phoneNumber}
                 onChangeText={(v) => updateField("phoneNumber", v)}
                 placeholder="+1 (555) 000-0000"
-                placeholderTextColor="#71717a"
                 keyboardType="phone-pad"
                 autoComplete="tel"
               />
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
+              <Label>Password</Label>
+              <Input
                 value={formData.password}
                 onChangeText={(v) => updateField("password", v)}
                 placeholder="••••••••"
-                placeholderTextColor="#71717a"
                 secureTextEntry
                 autoComplete="new-password"
               />
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Confirm password</Text>
-              <TextInput
-                style={styles.input}
+              <Label>Confirm password</Label>
+              <Input
                 value={formData.confirmPassword}
                 onChangeText={(v) => updateField("confirmPassword", v)}
                 placeholder="••••••••"
-                placeholderTextColor="#71717a"
                 secureTextEntry
                 autoComplete="new-password"
               />
             </View>
 
+            {/* Checkboxes */}
             <View style={styles.checkboxGroup}>
-              <Pressable
-                style={styles.checkboxRow}
-                onPress={() =>
-                  updateField("acceptedTerms", !formData.acceptedTerms)
+              <Checkbox
+                checked={formData.acceptedTerms}
+                onCheckedChange={(checked) =>
+                  updateField("acceptedTerms", checked)
                 }
-              >
-                <View
-                  style={[
-                    styles.checkbox,
-                    formData.acceptedTerms && styles.checkboxChecked,
-                  ]}
-                >
-                  {formData.acceptedTerms && (
-                    <Text style={styles.checkmark}>✓</Text>
-                  )}
-                </View>
-                <Text style={styles.checkboxLabel}>
-                  I agree to the{" "}
-                  <Text style={styles.link}>Terms of Service</Text>
-                </Text>
-              </Pressable>
-
-              <Pressable
-                style={styles.checkboxRow}
-                onPress={() =>
-                  updateField("acceptedPrivacy", !formData.acceptedPrivacy)
+                label="I agree to the Terms of Service"
+              />
+              <Checkbox
+                checked={formData.acceptedPrivacy}
+                onCheckedChange={(checked) =>
+                  updateField("acceptedPrivacy", checked)
                 }
-              >
-                <View
-                  style={[
-                    styles.checkbox,
-                    formData.acceptedPrivacy && styles.checkboxChecked,
-                  ]}
-                >
-                  {formData.acceptedPrivacy && (
-                    <Text style={styles.checkmark}>✓</Text>
-                  )}
-                </View>
-                <Text style={styles.checkboxLabel}>
-                  I agree to the <Text style={styles.link}>Privacy Policy</Text>
-                </Text>
-              </Pressable>
-
-              <Pressable
-                style={styles.checkboxRow}
-                onPress={() =>
-                  updateField("acceptedMarketing", !formData.acceptedMarketing)
+                label="I agree to the Privacy Policy"
+              />
+              <Checkbox
+                checked={formData.acceptedMarketing}
+                onCheckedChange={(checked) =>
+                  updateField("acceptedMarketing", checked)
                 }
-              >
-                <View
-                  style={[
-                    styles.checkbox,
-                    formData.acceptedMarketing && styles.checkboxChecked,
-                  ]}
-                >
-                  {formData.acceptedMarketing && (
-                    <Text style={styles.checkmark}>✓</Text>
-                  )}
-                </View>
-                <Text style={styles.checkboxLabel}>
-                  I want to receive marketing emails (optional)
-                </Text>
-              </Pressable>
+                label="I want to receive marketing emails (optional)"
+              />
             </View>
 
-            <Pressable
-              style={({ pressed }) => [
-                styles.button,
-                pressed && styles.buttonPressed,
-                loading && styles.buttonDisabled,
-              ]}
-              onPress={handleSubmit}
-              disabled={loading}
-            >
+            <Button onPress={handleSubmit} disabled={loading}>
               {loading ? (
-                <ActivityIndicator color="#09090b" />
+                <ActivityIndicator color={colors.mainForeground} size="small" />
               ) : (
                 <Text style={styles.buttonText}>Create account</Text>
               )}
-            </Pressable>
+            </Button>
           </View>
 
+          {/* Divider */}
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {/* OAuth Buttons */}
+          <View style={styles.oauthButtons}>
+            <Button
+              variant="neutral"
+              onPress={handleGoogleSignUp}
+              disabled={loading}
+            >
+              <Ionicons
+                name="logo-google"
+                size={20}
+                color={colors.foreground}
+              />
+              <Text style={styles.oauthButtonText}>Sign up with Google</Text>
+            </Button>
+
+            <Button
+              variant="neutral"
+              onPress={handleAppleSignUp}
+              disabled={loading}
+            >
+              <Ionicons name="logo-apple" size={20} color={colors.foreground} />
+              <Text style={styles.oauthButtonText}>Sign up with Apple</Text>
+            </Button>
+          </View>
+
+          {/* Footer */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>Already have an account? </Text>
             <Link href="/(auth)/login" asChild>
@@ -287,141 +363,127 @@ export default function SignupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#09090b",
+    backgroundColor: colors.background,
   },
   scrollContent: {
     flexGrow: 1,
   },
   content: {
-    paddingHorizontal: 24,
-    paddingVertical: 48,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.xxl,
     maxWidth: 400,
     width: "100%",
     alignSelf: "center",
   },
+  logoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  logo: {
+    width: 36,
+    height: 36,
+    borderRadius: borderRadius.base,
+    borderWidth: borderWidth.base,
+    borderColor: colors.border,
+    backgroundColor: colors.main,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logoText: {
+    fontSize: typography.sizes.lg,
+    fontWeight: typography.heading.fontWeight,
+    color: colors.foreground,
+  },
   header: {
-    marginBottom: 32,
+    marginBottom: spacing.xl,
     alignItems: "center",
   },
   title: {
-    fontSize: 28,
-    fontWeight: "600",
-    color: "#fafafa",
-    letterSpacing: -0.5,
+    fontSize: typography.sizes["2xl"],
+    fontWeight: typography.heading.fontWeight,
+    color: colors.foreground,
+    letterSpacing: typography.heading.letterSpacing,
   },
   subtitle: {
-    fontSize: 15,
-    color: "#a1a1aa",
-    marginTop: 8,
+    fontSize: typography.sizes.base,
+    color: colors.muted,
+    marginTop: spacing.sm,
   },
   errorContainer: {
-    backgroundColor: "rgba(239, 68, 68, 0.1)",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 16,
+    backgroundColor: colors.destructiveLight,
+    borderRadius: borderRadius.base,
+    borderWidth: borderWidth.base,
+    borderColor: colors.destructive,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    marginBottom: spacing.lg,
   },
   errorText: {
-    color: "#f87171",
-    fontSize: 14,
+    color: colors.destructive,
+    fontSize: typography.sizes.sm,
   },
   form: {
-    gap: 16,
+    gap: spacing.lg,
   },
   row: {
     flexDirection: "row",
-    gap: 12,
+    gap: spacing.md,
   },
   halfWidth: {
     flex: 1,
   },
   inputGroup: {
-    gap: 6,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#d4d4d8",
-  },
-  input: {
-    backgroundColor: "#18181b",
-    borderWidth: 1,
-    borderColor: "#27272a",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: "#fafafa",
+    gap: spacing.xs,
   },
   checkboxGroup: {
-    gap: 12,
-    marginTop: 8,
-  },
-  checkboxRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 12,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: "#3f3f46",
-    backgroundColor: "#18181b",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 2,
-  },
-  checkboxChecked: {
-    backgroundColor: "#fafafa",
-    borderColor: "#fafafa",
-  },
-  checkmark: {
-    color: "#09090b",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  checkboxLabel: {
-    flex: 1,
-    fontSize: 14,
-    color: "#a1a1aa",
-    lineHeight: 20,
-  },
-  link: {
-    color: "#fafafa",
-    textDecorationLine: "underline",
-  },
-  button: {
-    backgroundColor: "#fafafa",
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  buttonPressed: {
-    backgroundColor: "#e4e4e7",
-  },
-  buttonDisabled: {
-    opacity: 0.6,
+    gap: spacing.md,
+    marginTop: spacing.sm,
   },
   buttonText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#09090b",
+    fontSize: typography.sizes.base,
+    fontWeight: typography.heading.fontWeight,
+    color: colors.mainForeground,
+  },
+  divider: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: spacing.xl,
+  },
+  dividerLine: {
+    flex: 1,
+    height: borderWidth.base,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    paddingHorizontal: spacing.md,
+    fontSize: typography.sizes.sm,
+    color: colors.muted,
+    textTransform: "uppercase",
+  },
+  oauthButtons: {
+    gap: spacing.md,
+  },
+  oauthButtonText: {
+    fontSize: typography.sizes.base,
+    fontWeight: typography.heading.fontWeight,
+    color: colors.foreground,
   },
   footer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 24,
+    marginTop: spacing.xl,
   },
   footerText: {
-    color: "#a1a1aa",
-    fontSize: 14,
+    color: colors.muted,
+    fontSize: typography.sizes.sm,
   },
   footerLink: {
-    color: "#fafafa",
-    fontSize: 14,
-    fontWeight: "500",
+    color: colors.foreground,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.heading.fontWeight,
+    textDecorationLine: "underline",
   },
 });
