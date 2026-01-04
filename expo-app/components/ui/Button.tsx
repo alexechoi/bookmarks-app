@@ -56,7 +56,7 @@ export const Button = forwardRef<
     style,
     textStyle,
   },
-  ref
+  ref,
 ) {
   const isDisabled = disabled || loading;
 

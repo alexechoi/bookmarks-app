@@ -20,7 +20,7 @@ import { auth } from "./config";
  */
 export async function signUpWithEmail(
   email: string,
-  password: string
+  password: string,
 ): Promise<FirebaseAuthTypes.UserCredential> {
   return createUserWithEmailAndPassword(auth, email, password);
 }
@@ -30,7 +30,7 @@ export async function signUpWithEmail(
  */
 export async function signInWithEmail(
   email: string,
-  password: string
+  password: string,
 ): Promise<FirebaseAuthTypes.UserCredential> {
   return signInWithEmailAndPassword(auth, email, password);
 }
@@ -104,7 +104,7 @@ export async function signInWithApple(): Promise<FirebaseAuthTypes.UserCredentia
     const appleCredential = OAuthProvider.credential(
       "apple.com",
       identityToken,
-      nonce
+      nonce,
     );
 
     // Sign in to Firebase with the credential
@@ -143,7 +143,7 @@ export function getCurrentUser(): FirebaseAuthTypes.User | null {
  * Subscribe to auth state changes
  */
 export function onAuthStateChanged(
-  callback: (user: FirebaseAuthTypes.User | null) => void
+  callback: (user: FirebaseAuthTypes.User | null) => void,
 ): () => void {
   return firebaseOnAuthStateChanged(auth, callback);
 }
@@ -161,7 +161,7 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
  */
 export async function updatePassword(
   currentPassword: string,
-  newPassword: string
+  newPassword: string,
 ): Promise<void> {
   const user = auth.currentUser;
   if (!user || !user.email) {
