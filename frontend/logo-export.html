@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkMind Logo Export</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #f5f5f5;
+      font-family: system-ui, sans-serif;
+      padding: 40px;
+      gap: 60px;
+    }
+    
+    h1 {
+      font-size: 24px;
+      color: #333;
+    }
+    
+    .logo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 40px;
+      max-width: 1200px;
+    }
+    
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .logo-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* Transparent background for export */
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: oklch(86.03% 0.176 92.36); /* --main yellow */
+      border: 2px solid oklch(0% 0 0); /* black border */
+      border-radius: 5px;
+    }
+    
+    .logo svg {
+      color: oklch(0% 0 0); /* black icon */
+    }
+    
+    /* Size variations */
+    .logo-16 { width: 16px; height: 16px; }
+    .logo-16 svg { width: 8px; height: 8px; }
+    
+    .logo-32 { width: 32px; height: 32px; }
+    .logo-32 svg { width: 16px; height: 16px; }
+    
+    .logo-48 { width: 48px; height: 48px; }
+    .logo-48 svg { width: 24px; height: 24px; }
+    
+    .logo-64 { width: 64px; height: 64px; }
+    .logo-64 svg { width: 32px; height: 32px; }
+    
+    .logo-128 { width: 128px; height: 128px; border-width: 4px; border-radius: 10px; }
+    .logo-128 svg { width: 64px; height: 64px; }
+    
+    .logo-192 { width: 192px; height: 192px; border-width: 6px; border-radius: 15px; }
+    .logo-192 svg { width: 96px; height: 96px; }
+    
+    .logo-512 { width: 512px; height: 512px; border-width: 16px; border-radius: 40px; }
+    .logo-512 svg { width: 256px; height: 256px; }
+    
+    .logo-1024 { width: 1024px; height: 1024px; border-width: 32px; border-radius: 80px; }
+    .logo-1024 svg { width: 512px; height: 512px; }
+    
+    .label {
+      font-size: 14px;
+      color: #666;
+      font-weight: 500;
+    }
+    
+    .instructions {
+      max-width: 600px;
+      text-align: center;
+      color: #555;
+      line-height: 1.6;
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .instructions h2 {
+      margin-bottom: 12px;
+      color: #333;
+    }
+    
+    .instructions ul {
+      text-align: left;
+      margin-top: 12px;
+    }
+    
+    .instructions li {
+      margin: 8px 0;
+    }
+    
+    /* For icon-only export (no container) */
+    .icon-only {
+      background: transparent;
+      border: none;
+    }
+    
+    /* iOS style (rounded corners) */
+    .ios-style {
+      border-radius: 22.37%; /* iOS app icon corner radius */
+    }
+    
+    .ios-style.logo-1024 { border-radius: 229px; }
+    .ios-style.logo-192 { border-radius: 43px; }
+  </style>
+</head>
+<body>
+  <h1>LinkMind Logo Export</h1>
+  
+  <div class="instructions">
+    <h2>How to Export</h2>
+    <p>Right-click on any logo and select "Save image as..." or take a screenshot.</p>
+    <ul>
+      <li><strong>Favicon:</strong> Use 32x32 or 48x48</li>
+      <li><strong>PWA icons:</strong> 192x192 and 512x512</li>
+      <li><strong>iOS App Icon:</strong> 1024x1024 (use iOS style below)</li>
+      <li><strong>Android Adaptive Icon:</strong> 512x512 or 1024x1024</li>
+    </ul>
+  </div>
+
+  <h2>Standard Logo (Neobrutalist style)</h2>
+  <div class="logo-grid">
+    <div class="logo-container">
+      <div class="logo-wrapper">
+        <div class="logo logo-32">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+          </svg>
+        </div>
+      </div>
+      <span class="label">32×32 (favicon)</span>
+    </div>
+    
+    <div class="logo-container">
+      <div class="logo-wrapper">
+        <div class="logo logo-48">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+          </svg>
+        </div>
+      </div>
+      <span class="label">48×48</span>
+    </div>
+    
+    <div class="logo-container">
+      <div class="logo-wrapper">
+        <div class="logo logo-128">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+          </svg>
+        </div>
+      </div>
+      <span class="label">128×128</span>
+    </div>
+    
+    <div class="logo-container">
+      <div class="logo-wrapper">
+        <div class="logo logo-192">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+          </svg>
+        </div>
+      </div>
+      <span class="label">192×192 (PWA)</span>
+    </div>
+    
+    <div class="logo-container">
+      <div class="logo-wrapper">
+        <div class="logo logo-512">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+          </svg>
+        </div>
+      </div>
+      <span class="label">512×512 (PWA / Android)</span>
+    </div>
+  </div>
+
+  <h2>iOS App Icon Style (rounded corners)</h2>
+  <div class="logo-grid">
+    <div class="logo-container">
+      <div class="logo-wrapper">
+        <div class="logo logo-192 ios-style">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+          </svg>
+        </div>
+      </div>
+      <span class="label">192×192 iOS style</span>
+    </div>
+    
+    <div class="logo-container">
+      <div class="logo-wrapper">
+        <div class="logo logo-1024 ios-style">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+          </svg>
+        </div>
+      </div>
+      <span class="label">1024×1024 iOS App Store</span>
+    </div>
+  </div>
+
+  <h2>Large Export (1024×1024)</h2>
+  <div class="logo-container">
+    <div class="logo-wrapper">
+      <div class="logo logo-1024">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+        </svg>
+      </div>
+    </div>
+    <span class="label">1024×1024 (Android / master)</span>
+  </div>
+</body>
+</html>
+

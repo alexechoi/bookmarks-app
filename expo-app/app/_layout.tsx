@@ -1,6 +1,7 @@
 import { Slot } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider } from "@/components/AuthProvider";
 import {
@@ -30,13 +31,15 @@ function PushNotificationHandler() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <PushNotificationHandler />
-      <View style={styles.container}>
-        <StatusBar style="dark" />
-        <Slot />
-      </View>
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <PushNotificationHandler />
+        <View style={styles.container}>
+          <StatusBar style="dark" />
+          <Slot />
+        </View>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
 

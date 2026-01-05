@@ -22,6 +22,9 @@ export const metadata: Metadata = {
   title: "LinkMind - Never Forget a Link Again",
   description:
     "Save interesting links and get smart reminders to actually read them.",
+  icons: {
+    icon: "/logo.svg",
+  },
 };
 
 export default function RootLayout({

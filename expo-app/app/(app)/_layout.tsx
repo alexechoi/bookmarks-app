@@ -1,7 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Redirect, Tabs } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddBookmarkModal } from "@/components/AddBookmarkModal";
 import { useAuth } from "@/components/AuthProvider";
@@ -18,17 +25,31 @@ import {
 function TabsLayout() {
   const [addModalVisible, setAddModalVisible] = useState(false);
   const { triggerRefresh } = useBookmarks();
+  const insets = useSafeAreaInsets();
 
   const handleBookmarkAdded = () => {
     triggerRefresh();
   };
+
+  // Calculate tab bar height based on platform and safe area
+  const tabBarHeight = Platform.OS === "android" ? 60 + insets.bottom : 80;
+  const tabBarPaddingBottom =
+    Platform.OS === "android"
+      ? Math.max(insets.bottom, spacing.sm)
+      : spacing.md;
 
   return (
     <>
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarStyle: styles.tabBar,
+          tabBarStyle: [
+            styles.tabBar,
+            {
+              height: tabBarHeight,
+              paddingBottom: tabBarPaddingBottom,
+            },
+          ],
           tabBarActiveTintColor: colors.foreground,
           tabBarInactiveTintColor: colors.muted,
           tabBarLabelStyle: styles.tabBarLabel,
@@ -129,9 +150,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondaryBackground,
     borderTopWidth: borderWidth.base,
     borderTopColor: colors.border,
-    height: 80,
     paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
   },
   tabBarLabel: {
     fontSize: typography.sizes.xs,
