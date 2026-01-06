@@ -317,15 +317,27 @@ async def update_bookmark(
         raise HTTPException(status_code=404, detail="Bookmark not found")
 
     update_data = {"updatedAt": datetime.now(timezone.utc)}
+    tasks = get_tasks_service()
 
     if updates.is_read is not None:
         update_data["isRead"] = updates.is_read
+        # If marking as read, delete the pending reminder task
+        if updates.is_read and tasks.is_enabled():
+            tasks.delete_bookmark_reminder(user_id, bookmark_id)
+            logger.info(f"Deleted reminder task for read bookmark {bookmark_id}")
 
     if updates.reminder_interval is not None:
         update_data["reminderInterval"] = updates.reminder_interval
-        update_data["nextReminderAt"] = calculate_next_reminder(
-            updates.reminder_interval
-        )
+        next_reminder = calculate_next_reminder(updates.reminder_interval)
+        update_data["nextReminderAt"] = next_reminder
+
+        # Delete old task and create new one with updated schedule
+        if tasks.is_enabled():
+            tasks.delete_bookmark_reminder(user_id, bookmark_id)
+            tasks.schedule_bookmark_reminder(user_id, bookmark_id, next_reminder)
+            logger.info(
+                f"Rescheduled reminder for bookmark {bookmark_id} to {next_reminder}"
+            )
 
     doc_ref.update(update_data)
 
@@ -350,7 +362,7 @@ async def update_bookmark(
 @router.delete("/{bookmark_id}")
 async def delete_bookmark(bookmark_id: str, user: FirebaseUser):
     """
-    Delete a bookmark.
+    Delete a bookmark and its pending reminder task.
     """
     user_id = user["uid"]
     doc_ref = get_bookmark_doc(user_id, bookmark_id)
@@ -358,6 +370,12 @@ async def delete_bookmark(bookmark_id: str, user: FirebaseUser):
 
     if not doc.exists:
         raise HTTPException(status_code=404, detail="Bookmark not found")
+
+    # Delete any pending reminder task
+    tasks = get_tasks_service()
+    if tasks.is_enabled():
+        tasks.delete_bookmark_reminder(user_id, bookmark_id)
+        logger.info(f"Deleted reminder task for deleted bookmark {bookmark_id}")
 
     doc_ref.delete()
 
