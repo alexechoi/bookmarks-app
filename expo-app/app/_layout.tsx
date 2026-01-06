@@ -1,4 +1,5 @@
 import { Slot } from "expo-router";
+import { ShareIntentProvider } from "expo-share-intent";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -31,15 +32,17 @@ function PushNotificationHandler() {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
-        <PushNotificationHandler />
-        <View style={styles.container}>
-          <StatusBar style="dark" />
-          <Slot />
-        </View>
-      </AuthProvider>
-    </SafeAreaProvider>
+    <ShareIntentProvider>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <PushNotificationHandler />
+          <View style={styles.container}>
+            <StatusBar style="dark" />
+            <Slot />
+          </View>
+        </AuthProvider>
+      </SafeAreaProvider>
+    </ShareIntentProvider>
   );
 }
 

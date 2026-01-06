@@ -6,7 +6,7 @@
  */
 
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -35,6 +35,8 @@ interface AddBookmarkModalProps {
   visible: boolean;
   onClose: () => void;
   onBookmarkAdded?: () => void;
+  /** Pre-fill the URL field (e.g., from share intent) */
+  initialUrl?: string;
 }
 
 interface BookmarkResponse {
@@ -66,12 +68,20 @@ export function AddBookmarkModal({
   visible,
   onClose,
   onBookmarkAdded,
+  initialUrl,
 }: AddBookmarkModalProps) {
   const [url, setUrl] = useState("");
   const [reminderInterval, setReminderInterval] =
     useState<ReminderInterval>("1d");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Pre-fill URL when initialUrl changes (e.g., from share intent)
+  useEffect(() => {
+    if (initialUrl) {
+      setUrl(initialUrl);
+    }
+  }, [initialUrl]);
 
   const handleSubmit = async () => {
     if (!url.trim()) {
