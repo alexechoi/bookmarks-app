@@ -121,19 +121,17 @@ FirebaseUser = Annotated[dict, Depends(get_firebase_user)]
 OptionalFirebaseUser = Annotated[dict | None, Depends(get_optional_firebase_user)]
 
 
-async def verify_scheduler_or_user(
+async def verify_scheduler_token(
     authorization: Annotated[str | None, Header()] = None,
-) -> dict | None:
+) -> dict:
     """
-    Verify either a Firebase user token OR a Cloud Scheduler OIDC token.
+    Verify a Cloud Scheduler/Cloud Tasks OIDC token.
 
-    Cloud Scheduler sends OIDC tokens that can be verified by checking
-    the audience matches our service URL. For simplicity, we accept
-    requests from Cloud Scheduler (identified by OIDC token format)
-    or authenticated Firebase users.
+    Cloud Run validates OIDC tokens at the edge, so we just decode
+    and verify the issuer is Google.
 
     Returns:
-        dict with user info if Firebase user, or {"scheduler": True} if scheduler
+        dict with scheduler info: {"scheduler": True, "email": ...}
     """
     if not authorization:
         raise HTTPException(
@@ -152,26 +150,13 @@ async def verify_scheduler_or_user(
 
     token = parts[1]
 
-    # Try Firebase user token first
-    try:
-        firebase_service = get_firebase_service()
-        decoded_token = firebase_service.verify_token(token)
-        return decoded_token
-    except ValueError:
-        pass  # Not a Firebase token, might be OIDC
-
-    # For Cloud Scheduler OIDC tokens, we verify using Google's public keys
-    # In production, you should properly verify the OIDC token
-    # For now, we'll accept any properly formatted JWT from Cloud Scheduler
-    # The Cloud Run service already validates the OIDC token at the edge
     try:
         import jwt
 
         # Decode without verification - Cloud Run already verified at edge
-        # In production with custom domain, add proper OIDC verification
         decoded = jwt.decode(token, options={"verify_signature": False})
 
-        # Check if it's from Google (Cloud Scheduler)
+        # Verify it's from Google (Cloud Scheduler/Tasks)
         if decoded.get("iss") in [
             "https://accounts.google.com",
             "accounts.google.com",
@@ -183,9 +168,9 @@ async def verify_scheduler_or_user(
 
     raise HTTPException(
         status_code=401,
-        detail="Invalid authentication token",
+        detail="Invalid scheduler token",
         headers={"WWW-Authenticate": "Bearer"},
     )
 
 
-SchedulerOrUser = Annotated[dict, Depends(verify_scheduler_or_user)]
+SchedulerAuth = Annotated[dict, Depends(verify_scheduler_token)]
