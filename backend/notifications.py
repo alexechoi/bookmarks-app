@@ -12,7 +12,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from auth import FirebaseUser, SchedulerOrUser
+from auth import FirebaseUser, SchedulerAuth
 from firebase_service import get_firebase_service
 
 logger = logging.getLogger(__name__)
@@ -181,7 +181,7 @@ class ReminderResult(BaseModel):
 
 @router.post("/send-due-reminders", response_model=ReminderResult)
 async def send_due_reminders(
-    _auth: SchedulerOrUser,  # Accept Cloud Scheduler OIDC or Firebase user
+    _auth: SchedulerAuth,  # Cloud Scheduler OIDC token
 ) -> dict[str, Any]:
     """
     Send reminders for all bookmarks that are due.
@@ -291,7 +291,7 @@ async def send_due_reminders(
 
 @router.post("/send-daily-digest", response_model=ReminderResult)
 async def send_daily_digest(
-    _auth: SchedulerOrUser,  # Accept Cloud Scheduler OIDC or Firebase user
+    _auth: SchedulerAuth,  # Cloud Scheduler OIDC token
 ) -> dict[str, Any]:
     """
     Send a daily digest of unread bookmarks to all users.
@@ -366,7 +366,7 @@ class BookmarkReminderRequest(BaseModel):
 @router.post("/send-bookmark-reminder")
 async def send_bookmark_reminder(
     request: BookmarkReminderRequest,
-    _auth: SchedulerOrUser,  # Accept Cloud Tasks OIDC or Firebase user
+    _auth: SchedulerAuth,  # Cloud Tasks OIDC token
 ) -> dict[str, Any]:
     """
     Send a reminder notification for a specific bookmark.

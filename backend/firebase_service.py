@@ -95,7 +95,7 @@ class FirebaseService:
             return decoded_token
 
         except auth.InvalidIdTokenError as e:
-            logger.warning(f"Invalid token: {e}")
+            logger.debug(f"Invalid token: {e}")
             raise ValueError("Invalid authentication token") from e
 
         except auth.ExpiredIdTokenError as e:
