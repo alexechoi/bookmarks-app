@@ -11,8 +11,14 @@ import {
   signOut as firebaseSignOut,
   updatePassword as firebaseUpdatePassword,
 } from "@react-native-firebase/auth";
+import Constants from "expo-constants";
 
 import { auth } from "./config";
+
+// Get webClientId from app config (extracted from google-services.json at build time)
+const webClientId = Constants.expoConfig?.extra?.webClientId as
+  | string
+  | undefined;
 
 /**
  * Sign up a new user with email and password
@@ -48,8 +54,9 @@ export async function signInWithGoogle(): Promise<FirebaseAuthTypes.UserCredenti
       await import("@react-native-google-signin/google-signin");
 
     // Configure Google Sign-In
+    // webClientId is required to get an ID token - extracted from google-services.json at build time
     GoogleSignin.configure({
-      // Get webClientId from google-services.json or GoogleService-Info.plist
+      webClientId,
       scopes: ["email", "profile"],
     });
 

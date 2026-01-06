@@ -6,14 +6,8 @@
 
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import {
-  Pressable,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, StatusBar, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/components/AuthProvider";
 import { useBookmarks } from "@/components/BookmarkContext";
