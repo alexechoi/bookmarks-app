@@ -1,8 +1,8 @@
 """
 Cloud Tasks service for scheduling bookmark reminders.
 
-Provides functions to schedule individual bookmark reminder notifications
-using Google Cloud Tasks.
+Each bookmark gets a one-time Cloud Task that fires at the scheduled reminder time.
+The task name is stored in the bookmark document so it can be deleted if needed.
 """
 
 import json
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class TasksService:
-    """Service for creating Cloud Tasks."""
+    """Service for creating and managing Cloud Tasks."""
 
     _client: tasks_v2.CloudTasksClient | None = None
     _project: str | None = None
@@ -62,7 +62,7 @@ class TasksService:
         schedule_time: datetime,
     ) -> str | None:
         """
-        Schedule a reminder notification for a bookmark.
+        Schedule a one-time reminder notification for a bookmark.
 
         Args:
             user_id: The user's Firebase UID
@@ -88,8 +88,12 @@ class TasksService:
                 "bookmark_id": bookmark_id,
             }
 
+            # Use a deterministic task ID based on bookmark to avoid duplicates
+            task_id = f"reminder-{user_id[:8]}-{bookmark_id}"
+
             # Build the task
             task = {
+                "name": f"{queue_path}/tasks/{task_id}",
                 "http_request": {
                     "http_method": tasks_v2.HttpMethod.POST,
                     "url": f"{cls._backend_url}/notifications/send-bookmark-reminder",
@@ -120,35 +124,63 @@ class TasksService:
             return response.name
 
         except Exception as e:
+            # Task might already exist (duplicate), which is fine
+            if "ALREADY_EXISTS" in str(e):
+                logger.debug(f"Task already exists for bookmark {bookmark_id}")
+                return f"{cls._client.queue_path(cls._project, cls._location, cls._queue)}/tasks/reminder-{user_id[:8]}-{bookmark_id}"
             logger.error(f"Failed to create Cloud Task: {e}")
             return None
 
     @classmethod
-    def delete_bookmark_tasks(cls, user_id: str, bookmark_id: str) -> int:
+    def delete_task(cls, task_name: str) -> bool:
         """
-        Delete all pending tasks for a bookmark.
+        Delete a specific task by name.
 
-        Call this when a bookmark is marked as read or deleted.
+        Args:
+            task_name: Full task resource name
+
+        Returns:
+            True if deleted, False otherwise
+        """
+        cls.initialize()
+
+        if not cls.is_enabled() or not task_name:
+            return False
+
+        try:
+            cls._client.delete_task(name=task_name)
+            logger.info(f"Deleted task: {task_name}")
+            return True
+        except Exception as e:
+            # Task might not exist (already executed or deleted)
+            if "NOT_FOUND" in str(e):
+                logger.debug(f"Task not found (already executed?): {task_name}")
+                return True
+            logger.error(f"Failed to delete task: {e}")
+            return False
+
+    @classmethod
+    def delete_bookmark_reminder(cls, user_id: str, bookmark_id: str) -> bool:
+        """
+        Delete the pending reminder task for a bookmark.
 
         Args:
             user_id: The user's Firebase UID
             bookmark_id: The bookmark document ID
 
         Returns:
-            Number of tasks deleted
+            True if deleted or not found, False on error
         """
         cls.initialize()
 
         if not cls.is_enabled():
-            return 0
+            return False
 
-        # Note: Cloud Tasks doesn't support querying by payload content
-        # For production, you'd store task names in Firestore with the bookmark
-        # For now, we rely on the task checking if bookmark is read before sending
-        logger.debug(
-            "Task deletion not implemented - tasks will check read status at execution"
-        )
-        return 0
+        # Reconstruct the task name
+        queue_path = cls._client.queue_path(cls._project, cls._location, cls._queue)
+        task_name = f"{queue_path}/tasks/reminder-{user_id[:8]}-{bookmark_id}"
+
+        return cls.delete_task(task_name)
 
 
 def get_tasks_service() -> type[TasksService]:
