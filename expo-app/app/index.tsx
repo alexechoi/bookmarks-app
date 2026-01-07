@@ -16,6 +16,7 @@ export default function Index() {
   }
 
   // Redirect based on auth state
+  // Note: Share intents are handled by +native-intent.ts before reaching this component
   if (user) {
     return <Redirect href="/(app)" />;
   }

@@ -1,4 +1,4 @@
-import { Slot } from "expo-router";
+import { Slot, useRouter } from "expo-router";
 import { ShareIntentProvider } from "expo-share-intent";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
@@ -31,8 +31,19 @@ function PushNotificationHandler() {
 }
 
 export default function RootLayout() {
+  const router = useRouter();
+
   return (
-    <ShareIntentProvider>
+    <ShareIntentProvider
+      options={{
+        debug: __DEV__,
+        resetOnBackground: true,
+        onResetShareIntent: () => {
+          // When share intent is reset (app goes to background), go to main screen
+          router.replace("/(app)");
+        },
+      }}
+    >
       <SafeAreaProvider>
         <AuthProvider>
           <PushNotificationHandler />

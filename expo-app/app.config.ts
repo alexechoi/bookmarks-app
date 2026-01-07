@@ -30,7 +30,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
-  scheme: "expoapp",
+  scheme: "linkmind",
   userInterfaceStyle: "automatic",
   ios: {
     supportsTablet: true,
@@ -39,6 +39,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       process.env.GOOGLE_SERVICES_PLIST ?? "./GoogleService-Info.plist",
     entitlements: {
       "aps-environment": "production",
+    },
+    // Required: preserve both Google Sign-In and app scheme for expo-share-intent
+    // See: https://github.com/achorein/expo-share-intent#google-signin-and-cfbundleurlschemes
+    infoPlist: {
+      CFBundleURLTypes: [
+        {
+          CFBundleURLSchemes: [
+            "com.googleusercontent.apps.62614773390-n8545fl3l7sd0rnhtn6gk3qj28ccg2ff",
+            "linkmind",
+          ],
+        },
+      ],
     },
   },
   android: {
