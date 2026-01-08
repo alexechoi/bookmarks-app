@@ -105,6 +105,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           NSExtensionActivationSupportsWebURLWithMaxCount: 1,
           NSExtensionActivationSupportsWebPageWithMaxCount: 1,
         },
+        iosAppGroupIdentifier: "group.com.alexchoi.bookmarksapp",
         androidIntentFilters: ["text/*"],
       },
     ],
