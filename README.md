@@ -10,6 +10,10 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
 
+<img width="1437" height="958" alt="image" src="https://github.com/user-attachments/assets/d2e69a91-64bb-4951-9956-af84361cb9c7" />
+
+<img width="912" height="2048" alt="image" src="https://github.com/user-attachments/assets/ef0895e2-aeb9-42a3-8ab7-76d58d5f5b79" />
+
 A full-stack bookmarks management application with web frontend, mobile app, and API backend.
 
 | Component                         | Stack                            |
