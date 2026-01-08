@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Redirect, Tabs } from "expo-router";
-import { useState } from "react";
+import { useShareIntentContext } from "expo-share-intent";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -24,11 +25,39 @@ import {
 
 function TabsLayout() {
   const [addModalVisible, setAddModalVisible] = useState(false);
+  const [sharedUrl, setSharedUrl] = useState<string | undefined>(undefined);
   const { triggerRefresh } = useBookmarks();
   const insets = useSafeAreaInsets();
+  const { hasShareIntent, shareIntent, resetShareIntent } =
+    useShareIntentContext();
+
+  // Handle incoming share intent
+  useEffect(() => {
+    if (hasShareIntent && shareIntent) {
+      // Extract URL from share intent (webUrl is the parsed URL, text is raw)
+      const url = shareIntent.webUrl || shareIntent.text;
+      if (url) {
+        setSharedUrl(url);
+        setAddModalVisible(true);
+      }
+    }
+  }, [hasShareIntent, shareIntent]);
 
   const handleBookmarkAdded = () => {
     triggerRefresh();
+    // Reset share intent after bookmark is added
+    if (hasShareIntent) {
+      resetShareIntent();
+    }
+  };
+
+  const handleModalClose = () => {
+    setAddModalVisible(false);
+    setSharedUrl(undefined);
+    // Reset share intent when modal is closed
+    if (hasShareIntent) {
+      resetShareIntent();
+    }
   };
 
   // Calculate tab bar height based on platform and safe area
@@ -110,8 +139,9 @@ function TabsLayout() {
 
       <AddBookmarkModal
         visible={addModalVisible}
-        onClose={() => setAddModalVisible(false)}
+        onClose={handleModalClose}
         onBookmarkAdded={handleBookmarkAdded}
+        initialUrl={sharedUrl}
       />
     </>
   );

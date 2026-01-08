@@ -40,6 +40,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     entitlements: {
       "aps-environment": "production",
     },
+    // Required: preserve both Google Sign-In and app scheme for expo-share-intent
+    // See: https://github.com/achorein/expo-share-intent#google-signin-and-cfbundleurlschemes
+    infoPlist: {
+      CFBundleURLTypes: [
+        {
+          CFBundleURLSchemes: [
+            "com.googleusercontent.apps.62614773390-n8545fl3l7sd0rnhtn6gk3qj28ccg2ff",
+            "linkmind",
+          ],
+        },
+      ],
+    },
   },
   android: {
     adaptiveIcon: {
@@ -84,6 +96,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           compileSdkVersion: 35,
           targetSdkVersion: 35,
         },
+      },
+    ],
+    [
+      "expo-share-intent",
+      {
+        iosActivationRules: {
+          NSExtensionActivationSupportsWebURLWithMaxCount: 1,
+          NSExtensionActivationSupportsWebPageWithMaxCount: 1,
+        },
+        androidIntentFilters: ["text/*"],
       },
     ],
   ],
