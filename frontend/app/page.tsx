@@ -172,6 +172,15 @@ export default function Home() {
             </div>
             <span className="font-heading">LinkMind</span>
           </div>
+          <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground mb-2">
+            <Link href="/privacy" className="hover:text-foreground">
+              Privacy Policy
+            </Link>
+            <span>•</span>
+            <Link href="/terms" className="hover:text-foreground">
+              Terms of Service
+            </Link>
+          </div>
           <p className="text-sm text-muted-foreground">
             Save links. Get reminded. Actually read them.
           </p>

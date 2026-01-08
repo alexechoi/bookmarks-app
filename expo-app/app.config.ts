@@ -30,11 +30,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
-  scheme: "expoapp",
+  scheme: "linkmind",
   userInterfaceStyle: "automatic",
   ios: {
     supportsTablet: true,
-    bundleIdentifier: "xyz.alexchoi.bookmarksapp",
+    bundleIdentifier: "com.alexchoi.bookmarksapp",
     googleServicesFile:
       process.env.GOOGLE_SERVICES_PLIST ?? "./GoogleService-Info.plist",
     entitlements: {
