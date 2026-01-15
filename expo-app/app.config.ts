@@ -2,6 +2,16 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 import * as fs from "fs";
 import * as path from "path";
 
+// Check if a file exists
+function fileExists(filePath: string): boolean {
+  try {
+    const fullPath = path.resolve(__dirname, filePath);
+    return fs.existsSync(fullPath);
+  } catch {
+    return false;
+  }
+}
+
 // Extract webClientId from google-services.json (client_type 3 = web client)
 function getWebClientId(): string | undefined {
   try {
@@ -23,6 +33,11 @@ function getWebClientId(): string | undefined {
   }
 }
 
+// Check if iOS Google Services plist exists (provided via EAS secrets at build time)
+const iosGoogleServicesPath =
+  process.env.GOOGLE_SERVICES_PLIST ?? "./GoogleService-Info.plist";
+const hasIosGoogleServices = fileExists(iosGoogleServicesPath);
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: "LinkMind",
@@ -35,14 +50,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.alexchoi.bookmarksapp",
-    googleServicesFile:
-      process.env.GOOGLE_SERVICES_PLIST ?? "./GoogleService-Info.plist",
+    // Only include googleServicesFile if the file exists (provided via EAS secrets at build time)
+    ...(hasIosGoogleServices && {
+      googleServicesFile: iosGoogleServicesPath,
+    }),
     entitlements: {
       "aps-environment": "production",
     },
-    // Required: preserve both Google Sign-In and app scheme for expo-share-intent
-    // See: https://github.com/achorein/expo-share-intent#google-signin-and-cfbundleurlschemes
     infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+      // Required: preserve both Google Sign-In and app scheme for expo-share-intent
+      // See: https://github.com/achorein/expo-share-intent#google-signin-and-cfbundleurlschemes
       CFBundleURLTypes: [
         {
           CFBundleURLSchemes: [
