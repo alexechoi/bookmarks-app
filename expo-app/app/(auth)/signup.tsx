@@ -271,28 +271,32 @@ export default function SignupScreen() {
             </Button>
           </View>
 
-          {/* Divider */}
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
-            <View style={styles.dividerLine} />
-          </View>
+          {/* OAuth Buttons - hidden on iOS */}
+          {Platform.OS !== "ios" && (
+            <>
+              {/* Divider */}
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>or</Text>
+                <View style={styles.dividerLine} />
+              </View>
 
-          {/* OAuth Buttons */}
-          <View style={styles.oauthButtons}>
-            <Button
-              variant="neutral"
-              onPress={handleGoogleSignUp}
-              disabled={loading}
-            >
-              <Ionicons
-                name="logo-google"
-                size={20}
-                color={colors.foreground}
-              />
-              <Text style={styles.oauthButtonText}>Sign up with Google</Text>
-            </Button>
-          </View>
+              <View style={styles.oauthButtons}>
+                <Button
+                  variant="neutral"
+                  onPress={handleGoogleSignUp}
+                  disabled={loading}
+                >
+                  <Ionicons
+                    name="logo-google"
+                    size={20}
+                    color={colors.foreground}
+                  />
+                  <Text style={styles.oauthButtonText}>Sign up with Google</Text>
+                </Button>
+              </View>
+            </>
+          )}
 
           {/* Footer */}
           <View style={styles.footer}>

@@ -112,28 +112,32 @@ export default function LoginScreen() {
             <Text style={styles.subtitle}>Sign in to your account</Text>
           </View>
 
-          {/* OAuth Buttons */}
-          <View style={styles.oauthButtons}>
-            <Button
-              variant="neutral"
-              onPress={handleGoogleSignIn}
-              disabled={loading}
-            >
-              <Ionicons
-                name="logo-google"
-                size={20}
-                color={colors.foreground}
-              />
-              <Text style={styles.oauthButtonText}>Continue with Google</Text>
-            </Button>
-          </View>
+          {/* OAuth Buttons - hidden on iOS */}
+          {Platform.OS !== "ios" && (
+            <>
+              <View style={styles.oauthButtons}>
+                <Button
+                  variant="neutral"
+                  onPress={handleGoogleSignIn}
+                  disabled={loading}
+                >
+                  <Ionicons
+                    name="logo-google"
+                    size={20}
+                    color={colors.foreground}
+                  />
+                  <Text style={styles.oauthButtonText}>Continue with Google</Text>
+                </Button>
+              </View>
 
-          {/* Divider */}
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
-            <View style={styles.dividerLine} />
-          </View>
+              {/* Divider */}
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>or</Text>
+                <View style={styles.dividerLine} />
+              </View>
+            </>
+          )}
 
           {/* Error */}
           {error ? (
